@@ -5,6 +5,10 @@
 # clean_rubbish.csv - done by: alexander kahanek
 
 This is a cleaned version of the above data set:
+
++ Items were combined into single rows
+	- they were changed to one object per row
+
 + The weekdays had a mistake for one of the dates
 	- They were changed to match.
 
