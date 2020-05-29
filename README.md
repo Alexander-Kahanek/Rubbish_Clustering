@@ -25,10 +25,10 @@ This is a cleaned version of the above data set:
 
 This is a script made to take a pandas DataFrame object, and two lists of names: Centroid object list, and Object name list.
 
-# analysis.rmd
+# analysis.rmd - done by: alexander kahanek
 
 A work in progress rmd file. Goal is to be an analysis of clustering using python and R together.
 
-# litter.ipynb
+# litter.ipynb - done by: alexander kahanek
 
 A rudamentary analysis that was done to get a general idea of the starting data and clustering
