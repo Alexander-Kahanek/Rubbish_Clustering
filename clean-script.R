@@ -55,7 +55,7 @@ raw <- raw %>%
   ) %>% 
   subset(select = -c(serverTimeStamp))
 
-## add a is_trash column to seperate object locations from litter
+## add a is_litter column to seperate object locations from litter
 ## change other to uncategorized, they are the same classification
 
 litter = c("paper","tobacco","other","plastic","food","glass", "uncategorized")
