@@ -2,7 +2,8 @@
 
 Data files are not included due to company privacy, please contact to get a copy of the csv files.
 
-# clean_script.R - done by: alexander kahanek
+# clean_script.R
+done by: alexander kahanek
 
 This is a cleaned version of the above data set:
 
@@ -21,14 +22,17 @@ This is a cleaned version of the above data set:
 	- added a is_litter column, 0 == not litter, 1 == is litter.
 
 
-# euclidean_script.py - done by: alexander kahanek
+# euclidean_script.py
+done by: alexander kahanek
 
 This is a script made to take a pandas DataFrame object, and two lists of names: Centroid object list, and Object name list.
 
-# analysis.rmd - done by: alexander kahanek
+# analysis.rmd
+done by: alexander kahanek
 
 A work in progress rmd file. Goal is to be an analysis of clustering using python and R together.
 
-# litter.ipynb - done by: alexander kahanek
+# litter.ipynb
+done by: alexander kahanek
 
 A rudamentary analysis that was done to get a general idea of the starting data and clustering
