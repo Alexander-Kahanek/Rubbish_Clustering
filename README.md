@@ -1,6 +1,6 @@
 # Startup Grind Data Set
 
-Data files are not included due to company privacy, please contact to get a hold of the csv files.
+Data files are not included due to company privacy, please contact to get a copy of the csv files.
 
 # clean_script.R - done by: alexander kahanek
 
