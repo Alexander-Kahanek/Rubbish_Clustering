@@ -5,7 +5,7 @@ Data files are not included due to company privacy, please contact to get a copy
 # clean_script.R
 done by: alexander kahanek
 
-This is a cleaned version of the above data set:
+This is a cleaned version of the original raw data set:
 
 + Items were sesperated into single rows
 	- they were changed from having counts for objects to one object per row
