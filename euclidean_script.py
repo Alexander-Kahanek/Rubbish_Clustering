@@ -48,7 +48,7 @@ def get_euclidean(DF, CENTROIDS, OBJECTS, CUSTOM_CATEGORY = False):
     DF['cent_id'] = -1 # column to keep centroid id
     DF['obj_id'] = -1 # column to keep object id
     DF['closest_cent'] = -1 # column to keep closest centroid for objects
-    DF['cent_type'] = None
+    DF['cent_type'] = ""
     DF['distance'] = -1 # column to keep distances from object to centroid
 
     centroids = [] # will store (count, lat, long)
@@ -82,12 +82,11 @@ def get_euclidean(DF, CENTROIDS, OBJECTS, CUSTOM_CATEGORY = False):
             # row is not in type passed
             DF.drop(i, inplace= True)
 
-    # will be used to store into DataFrame at end
-    centroid_type = "None"
-
     for (id_o, lat_o, long_o) in objects:
 
-        min_distance = (-1, None) # will store (centroid count, distance to centroid)
+        min_distance = None # will store distance to centroid
+        min_id = -1 # will store id for closest centroid
+        min_type = None # will store type for closest centroid
 
         object_type = DF.loc[DF['obj_id'] == id_o, 'rubbishType'].values[0]
 
@@ -99,12 +98,14 @@ def get_euclidean(DF, CENTROIDS, OBJECTS, CUSTOM_CATEGORY = False):
 
                 distance = geopy.distance.geodesic((lat_c, long_c), (lat_o, long_o))
 
-                if min_distance[1] is None or distance.meters < min_distance[1]:
-                    min_distance = (id_c, distance.meters)
+                if min_distance is None or distance.meters < min_distance:
+                    min_distance = distance.meters
+                    min_id = id_c
+                    min_type = centroid_type
 
         # add info to dataframe
-        DF.loc[DF['obj_id'] == id_o, 'closest_cent'] = int(min_distance[0])
-        DF.loc[DF['obj_id'] == id_o, 'distance'] = float(min_distance[1])
-        DF.loc[DF['obj_id'] == id_o, 'cent_type'] = str(centroid_type)
+        DF.loc[DF['obj_id'] == id_o, 'closest_cent'] = int(min_id) # centroid id
+        DF.loc[DF['obj_id'] == id_o, 'cent_type'] = str(min_type) # centroid type
+        DF.loc[DF['obj_id'] == id_o, 'distance'] = float(min_distance) # distance to cent
 
     return DF
