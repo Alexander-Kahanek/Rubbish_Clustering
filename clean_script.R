@@ -10,11 +10,12 @@ FIN = "raw/Startup Grind Data Set - Sheet1.csv"
 FOUT = "clean/clean_rubbish.csv"
 litter = c("paper","tobacco","other","plastic","food","glass", "uncategorized")
 
-
+######################################
+# script starts below ################
 
 read.csv(FIN) %>% 
 ## number of items are combined
-# using add_items function to add rows for each item
+# using function to add rows for each item
   (function(data){
     # function to add rows for each item
     # loop through index in df
@@ -56,9 +57,9 @@ read.csv(FIN) %>%
   ) %>% 
   subset(select = -c(serverTimeStamp)) %>% 
 ## add a is_litter column to seperate object locations from litter
-## change other to uncategorized, they are the same classification
+## change other and uncategorized to unknown, they are the similar classifications
   mutate(
     is_litter = ifelse(rubbishType %in% litter,1,0),
-    rubbishType = ifelse(rubbishType == "other", "uncategorized", rubbishType)
+    rubbishType = ifelse(rubbishType == "other", "unknown", ifelse(rubbishType == "uncategorized", "unknown", rubbishType))
   ) %>% 
   write.csv(FOUT, row.names = FALSE)
