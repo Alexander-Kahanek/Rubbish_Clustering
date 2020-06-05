@@ -43,7 +43,7 @@ def get_euclidean(DF, CENTROIDS, OBJECTS, CUSTOM_CATEGORY = False):
     # delete rows that have latitude as null
     DF = DF[DF['lat'] != None]
 
-    # create new columns in dataframe
+    # create new columns in DataFrame
     # values set to -1 as placeholders
     DF['cent_id'] = -1 # column to keep centroid id
     DF['obj_id'] = -1 # column to keep object id
@@ -62,7 +62,7 @@ def get_euclidean(DF, CENTROIDS, OBJECTS, CUSTOM_CATEGORY = False):
         if DF.loc[i, 'rubbishType'] in CENTROIDS:
 
             # store centroid count into dataframe
-            DF.loc[i, 'cent_id'] = int(centroid_id)
+            DF.loc[i, 'cent_id'] = centroid_id
 
             # store (CENTROID count, latitude, longitude)
             centroids.append((centroid_id, DF.loc[i, 'lat'], DF.loc[i, 'long']))
@@ -71,7 +71,7 @@ def get_euclidean(DF, CENTROIDS, OBJECTS, CUSTOM_CATEGORY = False):
         elif DF.loc[i,'rubbishType'] in OBJECTS:
 
             # store object count into dataframe
-            DF.loc[i, 'obj_id'] = int(object_id)
+            DF.loc[i, 'obj_id'] = object_id
 
             # store (OBJECTS count, latitude, longitude)
             ## convert lat / long to measurements
@@ -104,8 +104,8 @@ def get_euclidean(DF, CENTROIDS, OBJECTS, CUSTOM_CATEGORY = False):
                     min_type = centroid_type
 
         # add info to dataframe
-        DF.loc[DF['obj_id'] == id_o, 'closest_cent'] = int(min_id) # centroid id
-        DF.loc[DF['obj_id'] == id_o, 'cent_type'] = str(min_type) # centroid type
-        DF.loc[DF['obj_id'] == id_o, 'distance'] = float(min_distance) # distance to cent
+        DF.loc[DF['obj_id'] == id_o, 'closest_cent'] = min_id # centroid id
+        DF.loc[DF['obj_id'] == id_o, 'cent_type'] = min_type # centroid type
+        DF.loc[DF['obj_id'] == id_o, 'distance'] = min_distance # distance to cent
 
     return DF

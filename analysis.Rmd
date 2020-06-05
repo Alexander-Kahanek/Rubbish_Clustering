@@ -5,8 +5,15 @@ date: "5/14/2020"
 output: html_document
 ---
 
+# Welcome
+
+PROJECT IS UNDER CONSTRUCTION
+
 Project uses R vizualization and Python scripting together
 
+Libraries and reading in clean data csv file
+
+Note: DAYS = Baseline audit, monday preparty, SG day 1, and SG day 2
 
 ```{r, warning=FALSE, message=FALSE}
 knitr::opts_chunk$set(warning=FALSE, message=FALSE)
@@ -22,29 +29,46 @@ source_python("euclidean_script.py") # load in python script
 raw <- read.csv('clean/clean_rubbish.csv') # load in cleaned data
 ```
 
-Baseline audit, monday preparty, SG day 1, and SG day 2
+# Analysis
 
+Checking distribution of rubbishTypes
+
+```{r}
+raw %>% 
+  subset(city == 'Redwood City') %>%
+  group_by(rubbishType) %>% 
+  summarise(
+    num_litter = n()
+  ) %>% 
+  arrange(-num_litter)
+```
+
+# Clustering
+
+Restrooms are not needed, they will not be passed through the script
 
 ```{r}
 # setup to get all types
 collection = c('trashCan', 'recyclingCan', 'tobaccoAshCan')
 litter = c('paper', 'tobacco', 'plastic', 'unknown', 'food', 'glass')
 
-# call python script
+
 clustered_data <- raw %>% 
   subset(city == 'Redwood City') %>% 
-  get_euclidean(collection, litter)
+  get_euclidean(collection, litter) # python function
 
 clustered_data %>% 
   head()
 ```
 
+Checking each collection object details
 
 ```{r}
 clustered_data %>% 
   subset(obj_id != -1) %>% # only want objects
   group_by(closest_cent) %>% 
   summarise(
+    cent_type = max(cent_type),
     num_litter = n(),
     mean_dist = mean(distance),
     median_dist = median(distance),
@@ -54,6 +78,7 @@ clustered_data %>%
   arrange(-num_litter)
 ```
 
+Checking collection type details
 
 ```{r}
 clustered_data %>% 
@@ -68,31 +93,6 @@ clustered_data %>%
   ) %>% 
   arrange(-num_litter)
 ```
-
-
-
-```{r}
-raw %>% 
-  subset(is_litter == 1) %>%
-  subset(city == 'Redwood City') %>%
-  group_by(rubbishType) %>% 
-  summarise(
-    count = n()
-  ) %>% 
-  arrange(-count)
-```
-
-
-```{r}
-clustered_data %>% 
-  subset(is_litter == 1) %>% 
-  group_by(rubbishType) %>% 
-  summarise(
-    count = n()
-  ) %>% 
-  arrange(-count)
-```
-
 
 ```{r}
 
