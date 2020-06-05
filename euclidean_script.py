@@ -1,7 +1,39 @@
 import pandas
 import geopy.distance
 
-def get_euclidean(DF, CENTROIDS, OBJECTS):
+def logical_category(OBJECT, CENTROID):
+    ## function used to categorize litter objects to centroids
+    # OBJECT @ pass in object type
+    # CENTROID @ pass in centroid type
+
+    if OBJECT == 'paper':
+        if CENTROID == 'trashCan' or CENTROID == 'recyclingCan':
+            return True
+
+    elif OBJECT == 'tobacco':
+        if CENTROID == 'trashCan' or CENTROID == 'tobaccoAshCan':
+            return True
+
+    elif OBJECT == 'plastic':
+        if CENTROID == 'trashCan' or CENTROID == 'recyclingCan':
+            return True
+
+    elif OBJECT == 'glass':
+        if CENTROID == 'trashCan':
+            return True
+
+    elif OBJECT == 'food':
+        if CENTROID == 'trashCan':
+            return True
+
+    elif OBJECT == 'uncategorized' or OBJECT == 'other':
+        if CENTROID == 'trashCan':
+            return True
+
+    else:
+        return False
+
+def get_euclidean(DF, CENTROIDS, OBJECTS, CUSTOM_CATEGORY = False):
     ## function to calculate euclidean distance
     # DF @ pass in df to be altered
     # CENTROIDS @ pass in list of types for centroids
@@ -54,12 +86,18 @@ def get_euclidean(DF, CENTROIDS, OBJECTS):
 
         min_distance = (-1, None) # will store (centroid count, distance to centroid)
 
+        object_type = DF.loc[DF['obj_id'] == id_o, 'rubbishType'].values[0]
+
         for (id_c, lat_c, long_c) in centroids:
 
-            distance = geopy.distance.geodesic((lat_c, long_c), (lat_o, long_o))
+            centroid_type = DF.loc[DF['cent_id'] == id_c, 'rubbishType'].values[0]
 
-            if min_distance[1] is None or distance.meters < min_distance[1]:
-                min_distance = (id_c, distance.meters)
+            if logical_category(object_type, centroid_type) or CUSTOM_CATEGORY is True:
+
+                distance = geopy.distance.geodesic((lat_c, long_c), (lat_o, long_o))
+
+                if min_distance[1] is None or distance.meters < min_distance[1]:
+                    min_distance = (id_c, distance.meters)
 
         # add info to dataframe
         DF.loc[DF['obj_id'] == id_o, 'closest_cent'] = int(min_distance[0])

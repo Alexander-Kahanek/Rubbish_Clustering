@@ -16,6 +16,10 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 options(stringsAsFactors = FALSE)
 library(dplyr)
 library(reticulate) # for python code
+
+source_python("euclidean_script.py") # load in python script
+
+raw <- read.csv('clean/clean_rubbish.csv') # load in cleaned data
 ```
 
 Baseline audit, monday preparty, SG day 1, and SG day 2
@@ -24,134 +28,47 @@ Below is a script I built in Python code, the purpose of this script is to:
 
 * blah
 
-```{python}
-import pandas
-import geopy.distance
-
-def get_euclidean(DF, CENTROIDS, OBJECTS):
-    ## function to calculate euclidean distance
-    # DF @ pass in df to be altered
-    # CENTROIDS @ pass in list of types for centroids
-    # OBJECTS @ pass in list of types to be objects
-
-    DF.index = pandas.RangeIndex(len(DF.index))
-
-    # delete rows that have latitude as null
-    DF = DF[DF['lat'] != None]
-
-    # create new columns in dataframe
-    # values set to -1 as placeholders
-    DF['cent_id'] = -1 # column to keep centroid id
-    DF['obj_id'] = -1 # column to keep object id
-    DF['closest_cent'] = -1 # column to keep closest centroid for objects
-    DF['distance'] = -1 # column to keep distances from object to centroid
-
-    centroids = [] # will store (count, lat, long)
-    objects = [] # will store (count, lat, long)
-
-    centroid_id = 1 # counter for centroid placement in dataframe
-    object_id = 1 # counter for object placement in dataframe
-
-    for i in range(len(DF)): # index in dataframe
-
-        if DF.loc[i, 'rubbishType'] in CENTROIDS:
-
-            # store centroid count into dataframe
-            DF.loc[i, 'cent_id'] = int(centroid_id)
-
-            # store (CENTROID count, latitude, longitude)
-            centroids.append((centroid_id, DF.loc[i, 'lat'], DF.loc[i, 'long']))
-            centroid_id = centroid_id + 1
-
-        elif DF.loc[i,'rubbishType'] in OBJECTS:
-
-            # store object count into dataframe
-            DF.loc[i, 'obj_id'] = int(object_id)
-
-            # store (OBJECTS count, latitude, longitude)
-            ## convert lat / long to measurements
-            objects.append((object_id, DF.loc[i, 'lat'], DF.loc[i, 'long']))
-            object_id = object_id + 1
-
-        else:
-            # row is not in type passed
-            DF.drop(i, inplace= True)
-
-    for (id_o, lat_o, long_o) in objects:
-
-        min_distance = (-1, None) # will store (centroid count, distance to centroid)
-
-        for (id_c, lat_c, long_c) in centroids:
-
-            distance = geopy.distance.geodesic((lat_c, long_c), (lat_o, long_o))
-
-            if min_distance[1] is None or distance.meters < min_distance[1]:
-                min_distance = (id_c, distance.meters)
-
-        # add info to dataframe
-        DF.loc[DF['obj_id'] == id_o, 'closest_cent'] = int(min_distance[0])
-        DF.loc[DF['obj_id'] == id_o, 'distance'] = float(min_distance[1])
-
-    return DF
-```
-
-First lets read in the data using python, this will also get the data variable into the python side of the code.
-
-```{python}
-raw = pandas.read_csv('clean/clean_rubbish.csv')
-raw = raw.drop(columns = ['Unnamed: 0'])
-```
-
-Now lets bring this data back to R and look at the head.
 
 ```{r}
-raw <- py$raw %>% 
-  mutate(
-    city = as.character(city),
-    state = as.character(state)
-  )
+# setup to get all types
+collection = c('trashCan', 'recyclingCan', 'tobaccoAshCan')
+litter = c('paper', 'tobacco', 'plastic', 'uncategorized', 'food', 'glass')
 
-raw %>% 
+# call python script
+clustered_data = get_euclidean(raw, collection, litter)
+
+clustered_data %>% 
   head()
 ```
 
-Awesome, now the data is good in 
-
-```{python}
-collection = ['trashCan', 'recyclingCan']
-litter = ['paper', 'tobacco', 'plastic', 'uncategorized', 'food']
-
-
-raw = get_euclidean(raw, collection, litter)
-raw.head()
-```
-
 
 ```{r}
-raw <- py$raw %>% 
-  mutate(
-    city = as.character(city),
-    state = as.character(state)
-  )
-
-raw %>% 
-  head()
-```
-
-```{r}
-raw %>% 
-  subset(closest_cent != -1) %>% 
+clustered_data %>% 
+  subset(obj_id != -1) %>% # only want objects
   group_by(closest_cent) %>% 
+  summarise(
+    num_litter = n(),
+    mean_dist = mean(distance),
+    median_dist = median(distance),
+    sd_dist = sd(distance),
+    max_dist = max(distance),
+  ) %>% 
+  arrange(-num_litter)
+```
+
+```{r}
+clustered_data %>% 
+  group_by(rubbishType) %>% 
   summarise(
     count = n()
   ) %>% 
   arrange(-count)
 ```
 
-```{python}
-import plotly.express as px
-import plotly.offline as py
 
-fig = px.scatter(raw[raw.obj_id != None], x='long', y='lat', color= 'closest_cent')
-fig.show(renderer="notebook")
+```{r}
+
 ```
+
+
+
