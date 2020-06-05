@@ -1,11 +1,11 @@
 # Startup Grind Data Set
 
-Data files are not included due to company privacy, please contact to get a copy of the csv files.
+The data is not included in this Repository, as it is private data files.
 
 # clean_script.R
 done by: alexander kahanek
 
-This is a script used to clean the original raw data set:
+This is a script used to clean the original raw data set, the hyperparameters can be modified at the top of the script. The script will output a csv file with the following changes:
 
 + Items were sesperated into single rows
 	- they were changed from having counts for objects to one object per row
@@ -18,21 +18,28 @@ This is a script used to clean the original raw data set:
 	- time - changed to Year-month-day 24hour:min:sec
 
 + Changed rubbishType and is_litter addition
-	- changed "other" category to "uncategorized".
+	- changed "other" and "uncategorized" categories to "unknown".
 	- added a is_litter column, 0 == not litter, 1 == is litter.
 
 
 # euclidean_script.py
 done by: alexander kahanek
 
-This is a script made to take a pandas DataFrame object, and two lists of names: Centroid object list, and Object name list.
+This script is made to take a Pandas DataFrame object, and two lists of centroid and object names. It leaves an option to use the logical classifier, or to ignore this. The script performs the following:
+
++ Gives ID numbers to litter and collection objects.
+
++ Finds closest collection object for each litter object.
+
++ Adds columns to DataFrame object, then returns.
+	- obj_id is the object id, -1 signifies it was not tagged as a litter object.
+	- cent_id is the centroid id, -1 signifies it was not tagged as a collection object.
+	- closest_cent is the closest centroid for a litter object, -1 signifies there is no centroid or object is a centroid.
+	- cent_type is the centroid type associated to the closest centroid. None signifies the same as -1 above.
+	- distance is the distance from the litter object to the closest centroid, -1 signifies there is no distance.
+	
 
 # analysis.rmd
 done by: alexander kahanek
 
-A work in progress rmd file. Goal is to be an analysis of clustering using python and R together.
-
-# litter.ipynb
-done by: alexander kahanek
-
-A rudamentary analysis that was done to get a general idea of the starting data and clustering
+A work in progress rmd file. Goal is to be an analysis of clustering using R for vizualization and the Data Analysis, while Python is used for scripting.

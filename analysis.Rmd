@@ -28,15 +28,12 @@ Baseline audit, monday preparty, SG day 1, and SG day 2
 ```{r}
 # setup to get all types
 collection = c('trashCan', 'recyclingCan', 'tobaccoAshCan')
-litter = c('paper', 'tobacco', 'plastic', 'uncategorized', 'food', 'glass')
+litter = c('paper', 'tobacco', 'plastic', 'unknown', 'food', 'glass')
 
 # call python script
 clustered_data <- raw %>% 
   subset(city == 'Redwood City') %>% 
-  get_euclidean(collection, litter) %>% 
-  mutate(
-    cent_type = cent_type[[1]]
-  )
+  get_euclidean(collection, litter)
 
 clustered_data %>% 
   head()
@@ -75,7 +72,20 @@ clustered_data %>%
 
 
 ```{r}
+raw %>% 
+  subset(is_litter == 1) %>%
+  subset(city == 'Redwood City') %>%
+  group_by(rubbishType) %>% 
+  summarise(
+    count = n()
+  ) %>% 
+  arrange(-count)
+```
+
+
+```{r}
 clustered_data %>% 
+  subset(is_litter == 1) %>% 
   group_by(rubbishType) %>% 
   summarise(
     count = n()
@@ -87,6 +97,7 @@ clustered_data %>%
 ```{r}
 
 ```
+
 
 
 
