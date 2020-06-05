@@ -1,6 +1,6 @@
 # Startup Grind Data Set
 
-The data is not included in this Repository, as it is private data files.
+The data files are not included in this Repository.
 
 # clean_script.R
 done by: alexander kahanek
