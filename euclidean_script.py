@@ -9,41 +9,28 @@ def logical_category(OBJECT, CENTROID):
     if OBJECT == 'paper':
         if CENTROID == 'trashCan' or CENTROID == 'recyclingCan':
             return True
-        else:
-            return False
 
     elif OBJECT == 'tobacco':
         if CENTROID == 'trashCan' or CENTROID == 'tobaccoAshCan':
             return True
-        else:
-            return False
 
     elif OBJECT == 'plastic':
         if CENTROID == 'trashCan' or CENTROID == 'recyclingCan':
             return True
-        else:
-            return False
 
     elif OBJECT == 'glass':
         if CENTROID == 'trashCan':
             return True
-        else:
-            return False
 
     elif OBJECT == 'food':
         if CENTROID == 'trashCan':
             return True
-        else:
-            return False
 
     elif OBJECT == 'unknown':
         if CENTROID == 'trashCan':
             return True
-        else:
-            return False
 
-    else:
-        return False
+    return False # everything else failed
 
 def get_euclidean(DF, CENTROIDS, OBJECTS, CUSTOM_CATEGORY = False):
     ## function to calculate euclidean distance
