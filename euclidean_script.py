@@ -49,6 +49,7 @@ def get_euclidean(DF, CENTROIDS, OBJECTS, CUSTOM_CATEGORY = False):
     DF['cent_id'] = -1 # column to keep centroid id
     DF['obj_id'] = -1 # column to keep object id
     DF['closest_cent'] = -1 # column to keep closest centroid for objects
+    DF['cent_type'] = None
     DF['distance'] = -1 # column to keep distances from object to centroid
 
     centroids = [] # will store (count, lat, long)
@@ -82,6 +83,9 @@ def get_euclidean(DF, CENTROIDS, OBJECTS, CUSTOM_CATEGORY = False):
             # row is not in type passed
             DF.drop(i, inplace= True)
 
+    # will be used to store into DataFrame at end
+    centroid_type = "None"
+
     for (id_o, lat_o, long_o) in objects:
 
         min_distance = (-1, None) # will store (centroid count, distance to centroid)
@@ -92,7 +96,7 @@ def get_euclidean(DF, CENTROIDS, OBJECTS, CUSTOM_CATEGORY = False):
 
             centroid_type = DF.loc[DF['cent_id'] == id_c, 'rubbishType'].values[0]
 
-            if logical_category(object_type, centroid_type) or CUSTOM_CATEGORY is True:
+            if logical_category(object_type, centroid_type) or CUSTOM_CATEGORY:
 
                 distance = geopy.distance.geodesic((lat_c, long_c), (lat_o, long_o))
 
@@ -102,5 +106,6 @@ def get_euclidean(DF, CENTROIDS, OBJECTS, CUSTOM_CATEGORY = False):
         # add info to dataframe
         DF.loc[DF['obj_id'] == id_o, 'closest_cent'] = int(min_distance[0])
         DF.loc[DF['obj_id'] == id_o, 'distance'] = float(min_distance[1])
+        DF.loc[DF['obj_id'] == id_o, 'cent_type'] = str(centroid_type)
 
     return DF

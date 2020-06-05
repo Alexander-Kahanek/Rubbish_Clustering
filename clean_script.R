@@ -5,12 +5,16 @@ options(stringsAsFactors = FALSE)
 library(dplyr)
 library(lubridate)
 
-raw <- read.csv("raw/Startup Grind Data Set - Sheet1.csv")
+####### HYPERPARAMETERS ##############
+FIN = "raw/Startup Grind Data Set - Sheet1.csv"
+FOUT = "clean/clean_rubbish.csv"
+litter = c("paper","tobacco","other","plastic","food","glass", "uncategorized")
 
+
+
+read.csv(FIN) %>% 
 ## number of items are combined
 # using add_items function to add rows for each item
-
-raw <- raw %>% 
   (function(data){
     # function to add rows for each item
     # loop through index in df
@@ -40,12 +44,9 @@ raw <- raw %>%
     }
     
     return (data)
-  })
-
+  }) %>% 
 ## days are categorized wrong
 # creating new date and time columns, also recategorizing days
-
-raw <- raw %>% 
   mutate(
     date = as.Date(serverTimeStamp,
                    format = "%m/%d/%Y"),
@@ -53,19 +54,11 @@ raw <- raw %>%
                            orders = "%m/%d/%Y, %I:%M:%S %p"),
     day = wday(date, label=TRUE)
   ) %>% 
-  subset(select = -c(serverTimeStamp))
-
+  subset(select = -c(serverTimeStamp)) %>% 
 ## add a is_litter column to seperate object locations from litter
 ## change other to uncategorized, they are the same classification
-
-litter = c("paper","tobacco","other","plastic","food","glass", "uncategorized")
-
-raw <- raw %>% 
   mutate(
     is_litter = ifelse(rubbishType %in% litter,1,0),
     rubbishType = ifelse(rubbishType == "other", "uncategorized", rubbishType)
-  )
-  
-
-raw %>% 
-  write.csv("clean/clean_rubbish.csv")
+  ) %>% 
+  write.csv(FOUT, row.names = FALSE)

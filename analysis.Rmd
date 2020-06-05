@@ -5,17 +5,17 @@ date: "5/14/2020"
 output: html_document
 ---
 
-Project uses R and Python code together
+Project uses R vizualization and Python scripting together
 
 
 ```{r, warning=FALSE, message=FALSE}
 knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 
 ####### ALL LIBRARIES USED ###########
-
 options(stringsAsFactors = FALSE)
 library(dplyr)
 library(reticulate) # for python code
+######################################
 
 source_python("euclidean_script.py") # load in python script
 
@@ -24,10 +24,6 @@ raw <- read.csv('clean/clean_rubbish.csv') # load in cleaned data
 
 Baseline audit, monday preparty, SG day 1, and SG day 2
 
-Below is a script I built in Python code, the purpose of this script is to:
-
-* blah
-
 
 ```{r}
 # setup to get all types
@@ -35,7 +31,12 @@ collection = c('trashCan', 'recyclingCan', 'tobaccoAshCan')
 litter = c('paper', 'tobacco', 'plastic', 'uncategorized', 'food', 'glass')
 
 # call python script
-clustered_data = get_euclidean(raw, collection, litter)
+clustered_data <- raw %>% 
+  subset(city == 'Redwood City') %>% 
+  get_euclidean(collection, litter) %>% 
+  mutate(
+    cent_type = cent_type[[1]]
+  )
 
 clustered_data %>% 
   head()
@@ -55,6 +56,23 @@ clustered_data %>%
   ) %>% 
   arrange(-num_litter)
 ```
+
+
+```{r}
+clustered_data %>% 
+  subset(obj_id != -1) %>% # only want objects
+  group_by(cent_type) %>% 
+  summarise(
+    num_litter = n(),
+    mean_dist = mean(distance),
+    median_dist = median(distance),
+    sd_dist = sd(distance),
+    max_dist = max(distance),
+  ) %>% 
+  arrange(-num_litter)
+```
+
+
 
 ```{r}
 clustered_data %>% 
