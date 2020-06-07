@@ -233,7 +233,8 @@ plot_data %>%
           showticklabels = c(FALSE, TRUE),
           colorbar_len = .8,
           grid_gap = 1
-          )
+          ) %>% 
+  layout(width=800)
 ```
 
 GRAPH ABOVE:
@@ -264,7 +265,8 @@ plot_data <- clustered_data %>%
  
 # Stream graph with a legend
 streamgraph(plot_data, "closest_cent", "num_litter", "time",
-            interpolate="cardinal", scale = "continuous", width="800px") %>% 
+            interpolate="cardinal", scale = "continuous", width="800px"
+            ) %>% 
   sg_legend(show=TRUE, label="Collection ID: ") %>% 
   sg_fill_brewer("RdPu")
 ```
