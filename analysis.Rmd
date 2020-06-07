@@ -18,14 +18,6 @@ output:
         #before_body: "header.html"
 ---
 
-
----
-title: "Rubbish Analysis"
-author: "Alexander Kahanek"
-date: "5/14/2020"
-output: html_document
----
-
 # Welcome
 
 ## testing 2
