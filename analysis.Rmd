@@ -49,16 +49,17 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 options(stringsAsFactors = FALSE)
 library(dplyr) # for main data manipulations
 library(reticulate) # for python script
-library(reshape2) # for dcast
-library(lubridate) # for hours
+library(reshape2) # for dcast()
+library(lubridate) # for hours()
 source_python("euclidean_script.py") # python script
 
 ###### GRAPHING ######
-library(RColorBrewer) # for colors
+library(RColorBrewer) # for colors in graphs
 library(ggplot2) # for lollipop graph
+library(hrbrthemes) # for ggplot theme
 library(sunburstR) # for sunburst graph
-library(streamgraph) # for streamgraph
-library(heatmaply) # for heatmap
+library(streamgraph) # for stream graph
+library(heatmaply) # for heatmap graph
 library(DT) # for data table
 library(leaflet) # for leaflet map
 library(htmltools) # for leaflet map
@@ -175,11 +176,11 @@ clustered_data %>%
   summarise(
     num_litter = n()
   ) %>% 
-  mutate(
+  mutate( # path is needed for plot
     path = paste(cent_type, day, rubbishType, sep="-")
   ) %>% 
   subset(select = c(path, num_litter)) %>% 
-  # plotting
+  # plotting suburst graph
   sunburst(legend=TRUE,
            colors = rev(brewer.pal(9, "RdPu")),
            count = TRUE
@@ -200,7 +201,7 @@ plot_data <- clustered_data %>%
                   ifelse(day=="Monday", get_hour(time)+24,
                          ifelse(day=="Tuesday", get_hour(time)+48,
                                 get_hour(time)+72))),
-    closest_cent = paste("Collection ID:", closest_cent, sep=" ")
+    closest_cent = paste("Collection ID:", closest_cent, sep=" ") # make centroid id prettier
   ) %>% 
   group_by(closest_cent,time) %>% 
   summarise(
