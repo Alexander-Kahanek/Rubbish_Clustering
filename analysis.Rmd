@@ -45,31 +45,29 @@ Note: DAYS = Baseline audit, monday preparty, SG day 1, and SG day 2
 knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 
 ####### ALL LIBRARIES USED ###########
+###### DATA MANIPULATION ######
 options(stringsAsFactors = FALSE)
-library(dplyr)
-library(reticulate) # for python code
-library(reshape2)
-library(lubridate)
+library(dplyr) # for main data manipulations
+library(reticulate) # for python script
+library(reshape2) # for dcast
+library(lubridate) # for hours
+source_python("euclidean_script.py") # python script
 
-library(leaflet)
-library(htmltools)
-
-library(ggplot2)
-library(viridis)
-library(hrbrthemes)
-library(plotly)
-library(heatmaply)
-library(DT)
-library(RColorBrewer)
-library(streamgraph)
+###### GRAPHING ######
+library(RColorBrewer) # for colors
+library(ggplot2) # for lollipop graph
+library(sunburstR) # for sunburst graph
+library(streamgraph) # for streamgraph
+library(heatmaply) # for heatmap
+library(DT) # for data table
+library(leaflet) # for leaflet map
+library(htmltools) # for leaflet map
 ######################################
 
-# load in python script
-source_python("euclidean_script.py") 
 
 # setup to get all types
+# will be used throughout code
 collection = c('trashCan', 'recyclingCan', 'tobaccoAshCan')
-
 litter = c('paper', 'tobacco', 'unknown', 'plastic', 'food', 'glass')
 
 # icon png files
@@ -77,7 +75,7 @@ icons = c("cigarette.png", "cigarette.png", "plastic-bottle.png", "cigarette.png
 
 # load in cleaned raw data
 raw <- read.csv('clean/clean_rubbish.csv') %>% 
-  mutate(
+  mutate( # change days from shorthand to full
     day = factor(ifelse(day =="Sun", "Sunday",
                         ifelse(day =="Mon", "Monday",
                           ifelse(day == "Tue", "Tuesday", "Wednesday"))),
@@ -147,12 +145,12 @@ NEED:
 ```{r}
 # clustering data points with python script
 clustered_data <- raw %>% 
-  subset(city == 'Redwood City') %>% 
+  subset(city == 'Redwood City') %>% # this is a different area
   get_euclidean(collection, litter) # python function
 
 # getting details on clustered data
 clusters <- clustered_data %>% 
-  subset(obj_id != -1) %>% # only want objects
+  subset(is_litter == 1) %>% # only want objects
   group_by(closest_cent, day) %>% 
   summarise(
     cent_type = max(cent_type),
@@ -165,60 +163,90 @@ clusters <- clustered_data %>%
     long = mean(long)
   ) %>% 
   arrange(-num_litter)
-
-# plotting datatable for viewing pleasure
-clustered_data %>% 
-  subset(obj_id != -1) %>% # only want objects
-  group_by(closest_cent) %>% 
-  summarise(
-    cent_type = max(cent_type),
-    num_litter = n(),
-    mean_dist = round(mean(distance),2),
-    median_dist = round(median(distance),2),
-    sd_dist = round(sd(distance),2),
-    max_dist = round(max(distance),2),
-    lat = mean(lat),
-    long = mean(long)
-  ) %>% 
-  arrange(-num_litter) %>% 
-  subset(select = -c(lat, long)) %>% 
-  rename(
-    "Collection ID" = closest_cent,
-    "Collection Type" = cent_type,
-    "Number of Litter" = num_litter,
-    "Mean Distance (m)" = mean_dist,
-    "Median Distance (m)" = median_dist,
-    "Standard Deviation (m)" = sd_dist,
-    "Max Distance (m)" = max_dist
-  ) %>% 
-  datatable()
 ```
 
-searchable datatable
+clustering preformed
 
+```{r, fig.cap="This shows the breakdown of clusterings, from Collection Object Type, to day of the week, then finally to the litter type."}
+# getting data for sunburst plot
+clustered_data %>% 
+  subset(is_litter == 1) %>% 
+  group_by(cent_type, day, rubbishType) %>% 
+  summarise(
+    num_litter = n()
+  ) %>% 
+  mutate(
+    path = paste(cent_type, day, rubbishType, sep="-")
+  ) %>% 
+  subset(select = c(path, num_litter)) %>% 
+  # plotting
+  sunburst(legend=TRUE,
+           colors = rev(brewer.pal(9, "RdPu")),
+           count = TRUE
+           )
+```
+
+```{r, fig.cap="This graph represents the amount of litter collected per hour, for each collection object."}
+get_hour <- function(time){
+  # function used to save space
+  return (hour(as.POSIXct(time, format="%Y-%m-%d %H:%M:%S")))
+}
+
+# getting plot data for streamgraph
+plot_data <- clustered_data %>% 
+  subset(is_litter==1) %>% # only want objects
+  mutate( # getting hours of days, and making them concurrent
+    time = ifelse(day=="Sunday", get_hour(time),
+                  ifelse(day=="Monday", get_hour(time)+24,
+                         ifelse(day=="Tuesday", get_hour(time)+48,
+                                get_hour(time)+72))),
+    closest_cent = paste("Collection ID:", closest_cent, sep=" ")
+  ) %>% 
+  group_by(closest_cent,time) %>% 
+  summarise(
+    num_litter = n()
+  ) %>% 
+  arrange(-num_litter)
+
+ 
+# plotting Streamgraph
+plot_data %>% 
+  streamgraph(
+    "closest_cent", "num_litter", "time",
+    interpolate="cardinal", scale = "continuous", width="800px"
+            ) %>% 
+  sg_legend(show=TRUE, label="Collection ID: ") %>% 
+  sg_fill_brewer("RdPu")
+```
+
+
+GRAPH ABOVE:
+
+  + Shows amount of litter collected for each hour
 
 
 ```{r}
-# prepping data for plot
+# prepping data for heatmap plot
 plot_data <- clusters %>%
   subset(select = c(day, closest_cent, mean_dist)) %>% 
   dcast(closest_cent ~ day, value.var = "mean_dist") %>% 
-  mutate(
+  mutate( # chaning na values to 0
     Sunday = ifelse(is.na(Sunday),0,Sunday),
     Monday = ifelse(is.na(Monday),0,Monday),
     Tuesday = ifelse(is.na(Tuesday),0,Tuesday),
     Wednesday = ifelse(is.na(Wednesday),0,Wednesday)
   )
 
+# changing rownames to centroid id
 rownames(plot_data) <- plot_data[,"closest_cent"]
 
 # making dataframe into matrix
 plot_data <- plot_data %>% 
   subset(select = -c(closest_cent)) %>% 
   as.matrix() %>% 
-  t()
+  t() # flip matrix
 
-# making heatmap
+# plotting heatmap
 plot_data %>% 
   heatmaply(
           plot_method = "plotly",
@@ -242,39 +270,33 @@ GRAPH ABOVE:
   + differences of mean distance for each cluster, by day
 
 
-```{r, fig.cap="This graph represents the amount of litter collected per hour."}
-get_hour <- function(time){
-  return (hour(as.POSIXct(time, format="%Y-%m-%d %H:%M:%S")))
-}
-
-plot_data <- clustered_data %>% 
-  subset(is_litter==1) %>% # only want objects
-  mutate(
-    time = ifelse(day=="Sunday", get_hour(time),
-                  ifelse(day=="Monday", get_hour(time)+24,
-                         ifelse(day=="Tuesday", get_hour(time)+48,
-                                get_hour(time)+72))),
-    closest_cent = paste("ID:", closest_cent, sep=" ")
-  ) %>% 
-  group_by(closest_cent,time) %>% 
+```{r}
+# getting data for data table
+clustered_data %>% 
+  subset(obj_id != -1) %>% # only want objects
+  group_by(closest_cent) %>% 
   summarise(
-    num_litter = n()
+    cent_type = max(cent_type),
+    num_litter = n(),
+    mean_dist = round(mean(distance),2),
+    median_dist = round(median(distance),2),
+    sd_dist = round(sd(distance),2),
+    max_dist = round(max(distance),2)
   ) %>% 
-  arrange(-num_litter)
-
- 
-# Stream graph with a legend
-streamgraph(plot_data, "closest_cent", "num_litter", "time",
-            interpolate="cardinal", scale = "continuous", width="800px"
-            ) %>% 
-  sg_legend(show=TRUE, label="Collection ID: ") %>% 
-  sg_fill_brewer("RdPu")
+  arrange(-num_litter) %>% 
+  rename( # renaming columns
+    "Collection ID" = closest_cent,
+    "Collection Type" = cent_type,
+    "Number of Litter" = num_litter,
+    "Mean Distance (m)" = mean_dist,
+    "Median Distance (m)" = median_dist,
+    "Standard Deviation (m)" = sd_dist,
+    "Max Distance (m)" = max_dist
+  ) %>% 
+  # plotting data table
+  datatable()
 ```
 
-
-GRAPH ABOVE:
-
-  + Shows amount of litter collected for each hour
 
 ```{r, fig.width=7, fig.height=8}
 colors <- colorNumeric(
