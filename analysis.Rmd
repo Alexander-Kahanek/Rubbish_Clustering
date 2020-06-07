@@ -49,6 +49,7 @@ options(stringsAsFactors = FALSE)
 library(dplyr)
 library(reticulate) # for python code
 library(reshape2)
+library(lubridate)
 
 library(leaflet)
 library(htmltools)
@@ -57,8 +58,10 @@ library(ggplot2)
 library(viridis)
 library(hrbrthemes)
 library(plotly)
+library(heatmaply)
 library(DT)
 library(RColorBrewer)
+library(streamgraph)
 ######################################
 
 # load in python script
@@ -84,34 +87,7 @@ raw <- read.csv('clean/clean_rubbish.csv') %>%
 
 # Analysis
 
-Checking distribution of rubbishTypes
-
-```{r}
-plot_data <- raw %>% 
-  subset(city == 'Redwood City') %>%
-  subset(is_litter == 1) %>% 
-  group_by(rubbishType, day) %>% 
-  summarise(
-    num_litter = n()
-  ) %>% 
-  group_by(day) %>% 
-  arrange(-num_litter)
-
-library(data.tree)
-library(circlepackeR)
-
-plot_data$pathString <- paste("world", plot_data$rubbishType, plot_data$day, sep = "/")
-
-population <- as.Node(plot_data)
-
-circlepackeR(population, size = "num_litter",
-             color_min = "hsl(319, 80%, 81%)", 
-             color_max = "hsl(39, 80%, 52%)")
-```
-
-CIRCULAR PACKING all litter -> day -> type
-
-```{r, fig.height=7.5}
+```{r, fig.height=10}
 # prepping data for plot
 plot_data<- raw %>% 
   subset(city == 'Redwood City') %>%
@@ -134,6 +110,8 @@ plot_data %>%
   coord_flip()+
   theme_ipsum() +
   theme(
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.y = element_blank(),
     legend.position = "none",
     panel.border = element_blank(),
     panel.spacing = unit(0.1, "lines"),
@@ -141,29 +119,29 @@ plot_data %>%
   ) +
   xlab("") +
   ylab("Pieces of Litter Collected") +
+  ggtitle("Total Litter Collected by Rubbish Team") +
   facet_wrap(~day, ncol=1, scale="free_y") +
   scale_x_continuous(
     breaks = plot_data$order,
     labels = plot_data$rubbishType)
 
 # CHANGING IMAGES
-#library("ggplot2")
 #library("ggimage")
-#set.seed(2017-02-21)
-#d <- data.frame(x = rnorm(10),
-#                y = rnorm(10),
-#                image = sample(c("https://www.r-project.org/logo/Rlogo.png",
-#                                 "https://jeroenooms.github.io/images/frink.png"),
-#                               size=10, replace = TRUE)
-#                )
-#ggplot(d, aes(x, y)) + geom_image(aes(image=image), size=.05)
+# image links must be in dataframe column
+#geom_image(aes(image=image), size=.05)
 ```
 
-lollipop
+GRAPH ABOVE:
+
+  + add icons instead of points
+  + gives overview of litter collections
+  
+NEED:
+
+  + graph for total distribution by type
+    - percentalized?
 
 # Clustering
-
-Restrooms are not needed, they will not be passed through the script
 
 
 ```{r}
@@ -216,6 +194,9 @@ clustered_data %>%
   datatable()
 ```
 
+searchable datatable
+
+
 
 ```{r}
 # prepping data for plot
@@ -234,56 +215,64 @@ rownames(plot_data) <- plot_data[,"closest_cent"]
 # making dataframe into matrix
 plot_data <- plot_data %>% 
   subset(select = -c(closest_cent)) %>% 
-  as.matrix()
+  as.matrix() %>% 
+  t()
 
-# plotting heatmap
-lattice::levelplot(plot_data,
-                   aspect = "fill",
-                   main = "Mean Distance for each Collection Object, by day of week",
-                   xlab = "Collection Object",
-                   ylab = list(NULL),
-                   scales = list(x=list(labels=NULL),
-                                 tck = c(1,0)),
-                   col.regions = colorRampPalette(rev(brewer.pal(11, "RdPu"))))
-                   
+# making heatmap
+plot_data %>% 
+  heatmaply(
+          plot_method = "plotly",
+          colors = colorRampPalette(rev(brewer.pal(9, "RdPu"))),
+          dendogram = "column",
+          show_dendrogram = c(FALSE, FALSE),
+          label_names = c("Day", "Collection ID", "Mean Distance"),
+          grid_color = "white",
+          main = "Mean Distance of Litter to Closest Collection Object",
+          xlab = "Collection Objects",
+          key.title = "meters",
+          showticklabels = c(FALSE, TRUE),
+          colorbar_len = .8,
+          grid_gap = 1
+          )
 ```
 
-ABOVE: 
+GRAPH ABOVE:
 
-  + Change colors, pink -> red?
-  + change title, use subtitle to describe bottom
-
-Checking collection type details
+  + differences of mean distance for each cluster, by day
 
 
-```{r}
-clustered_data %>% 
-  subset(obj_id != -1) %>% # only want objects
-  group_by(cent_type, day) %>% 
-  summarise(
-    num_litter = n(),
-    mean_dist = mean(distance),
-    median_dist = median(distance),
-    sd_dist = sd(distance),
-    max_dist = max(distance)
-  ) %>% 
-  arrange(-num_litter) %>% 
+```{r, fig.cap="This graph represents the amount of litter collected per hour."}
+get_hour <- function(time){
+  return (hour(as.POSIXct(time, format="%Y-%m-%d %H:%M:%S")))
+}
+
+plot_data <- clustered_data %>% 
+  subset(is_litter==1) %>% # only want objects
   mutate(
-    num_litter = ifelse(cent_type=="trashCan",num_litter*-1, num_litter)
+    time = ifelse(day=="Sunday", get_hour(time),
+                  ifelse(day=="Monday", get_hour(time)+24,
+                         ifelse(day=="Tuesday", get_hour(time)+48,
+                                get_hour(time)+72))),
+    closest_cent = paste("ID:", closest_cent, sep=" ")
   ) %>% 
-  subset(cent_type != "tobaccoAshCan") %>% 
-  ggplot(aes(x = num_litter, y= factor(day, levels= c("Sunday", "Monday", "Tuesday", "Wednesday")), fill = cent_type))+
-  geom_bar(stat = "identity")+
-  ylab(label = "")
+  group_by(closest_cent,time) %>% 
+  summarise(
+    num_litter = n()
+  ) %>% 
+  arrange(-num_litter)
+
+ 
+# Stream graph with a legend
+streamgraph(plot_data, "closest_cent", "num_litter", "time",
+            interpolate="cardinal", scale = "continuous", width="800px") %>% 
+  sg_legend(show=TRUE, label="Collection ID: ") %>% 
+  sg_fill_brewer("RdPu")
 ```
 
-ABOVE:
 
-  + hour by hour timeseries or split violin graph
-  + pink -> purple
-  + change x axis values
-  + PROPORTIONAL?
-  + radarchart() <-
+GRAPH ABOVE:
+
+  + Shows amount of litter collected for each hour
 
 ```{r, fig.width=7, fig.height=8}
 colors <- colorNumeric(
@@ -357,6 +346,8 @@ map
 ```
 
 ffffffffffffffffffffffffffffff
+
+map looks disgusting
 
 hexbin?
 
