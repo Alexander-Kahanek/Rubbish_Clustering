@@ -7,29 +7,31 @@ mail: "alexanderkahanek@gmail.com"
 #twitter: ""
 github: "Alexander-Kahanek"
 home: "alexander-kahanek.github.io"
-logo: "rubbish.png"
+logo: "images/rubbish_logo.png"
 output:
   epuRate::epurate:
-    #css: "style.css"
+    #css: style.css
     toc: TRUE
     number_sections: FALSE
     code_folding: "hide"
     #includes: 
-        #before_body: "header.html"
+        #before_body: header.html
 ---
 
 # Welcome
 
-## testing 2
+SHOW ASHCANS -> TOBACCO only
 
-### testing 3
+SHOW PROPORTIONS OF ACTUAL LITTER
 
+  + Does that compare to the clustered?
+  + Litter -> collections
 
-PROJECT IS UNDER CONSTRUCTION
+In this we will be taking an advanced look at a cleanup that the Rubbish team did.
 
 Project uses R vizualization and Python scripting together
 
-Libraries and reading in clean data csv file
+## About Event and Cleanup
 
 Note: DAYS = Baseline audit, monday preparty, SG day 1, and SG day 2
 
@@ -59,7 +61,6 @@ library(htmltools) # for leaflet map
 
 
 # setup to get all types
-# will be used throughout code
 collection = c('trashCan', 'recyclingCan', 'tobaccoAshCan')
 litter = c('paper', 'tobacco', 'unknown', 'plastic', 'food', 'glass')
 
@@ -76,7 +77,8 @@ raw <- read.csv('clean/clean_rubbish.csv') %>%
   )
 ```
 
-# Analysis
+# How much litter was cleaned?
+
 
 ```{r, fig.height=10}
 # prepping data for plot
@@ -122,6 +124,7 @@ plot_data %>%
 #geom_image(aes(image=image), size=.05)
 ```
 
+
 GRAPH ABOVE:
 
   + add icons instead of points
@@ -131,15 +134,26 @@ NEED:
 
   + graph for total distribution by type
     - percentalized?
+    - ATTATCHED IN ONE GRAPHIC
 
-# Clustering
+
+# What about Collection Objects?
+
+Collection Objects would be Trash Cans, Recycling Cans, and Tobacco Ash Cans.
+
+explain clustering
+
+## The breakdown of Collection Object Clustering
 
 
-```{r}
+```{r, fig.cap="This shows the breakdown of clusterings, from Collection Object Type, to litter type, then to the day of the week it was collected."}
 # clustering data points with python script
 clustered_data <- raw %>% 
   subset(city == 'Redwood City') %>% # this is a different area
   get_euclidean(collection, litter) # python function
+
+#########################
+# CLUSTERING PREFORMED
 
 # getting details on clustered data
 clusters <- clustered_data %>% 
@@ -158,26 +172,34 @@ clusters <- clustered_data %>%
   arrange(-num_litter)
 ```
 
-clustering preformed
 
-```{r, fig.cap="This shows the breakdown of clusterings, from Collection Object Type, to day of the week, then finally to the litter type."}
+```{r}
 # getting data for sunburst plot
-clustered_data %>% 
+sunburst <- clustered_data %>% 
   subset(is_litter == 1) %>% 
   group_by(cent_type, day, rubbishType) %>% 
   summarise(
     num_litter = n()
   ) %>% 
   mutate( # path is needed for plot
-    path = paste(cent_type, day, rubbishType, sep="-")
+    path = paste(cent_type, rubbishType, day, sep="-")
   ) %>% 
   subset(select = c(path, num_litter)) %>% 
   # plotting suburst graph
   sunburst(legend=TRUE,
-           colors = rev(brewer.pal(9, "RdPu")),
-           count = TRUE
+           colors = rev(brewer.pal(9, "RdPu")[4:9]),
+           count = TRUE,
+           breadcrumb = list(w=150,h=50, t=30),
+           sumNodes = TRUE
            )
+sunburst
 ```
+
+This graph does a great job of breaking down the desparities of Trash Cans and Recycling Cans, while also showing similarities!
+
+## Did the Rubbish Team have an effect?
+
+To see if the Rubbish team had an effect on the clustering, we should look where they were focused.
 
 ```{r, fig.cap="This graph represents the amount of litter collected per hour, for each collection object."}
 get_hour <- function(time){
@@ -193,7 +215,11 @@ plot_data <- clustered_data %>%
                   ifelse(day=="Monday", get_hour(time)+24,
                          ifelse(day=="Tuesday", get_hour(time)+48,
                                 get_hour(time)+72))),
-    closest_cent = paste("Collection ID:", closest_cent, sep=" ") # make centroid id prettier
+    # make graph prettier
+    closest_cent = paste(ifelse(cent_type == "trashCan", "Trash ID:",
+                                ifelse(cent_type == "recyclingCan", "Recyc ID:", "Ash ID:")),
+                         ifelse(closest_cent<10, paste("0",closest_cent, sep=""), closest_cent),
+                         sep= " ")
   ) %>% 
   group_by(closest_cent,time) %>% 
   summarise(
@@ -206,21 +232,36 @@ plot_data <- clustered_data %>%
 plot_data %>% 
   streamgraph(
     "closest_cent", "num_litter", "time",
-    interpolate="cardinal", scale = "continuous", width="800px"
+    interpolate="step", #offset = "zero",
+    scale = "continuous", width="800px", height="400px"
             ) %>% 
   sg_legend(show=TRUE, label="Collection ID: ") %>% 
-  sg_fill_brewer("RdPu")
+  sg_fill_manual(brewer.pal(9, "RdPu")[c(3:9)]) %>% 
+  sg_annotate("Collected Litter per Hour", "300px", "400px")
+  
 ```
 
 
-GRAPH ABOVE:
+This graph shows two things:
 
-  + Shows amount of litter collected for each hour
+  + This is a multi-day event, which means is why we see the sharp spikes leading to 0 litter being collected for some hours.
+  
+  + The litter team had stayed by certain collection objects for longer than others.
+
+## Well, how close was the litter to Collection Objects?
+
+To see this, we need compare the mean distances for each collection object. It will be better to view this for each individual day, as we know there was more foot traffic on Tuesday and Wednesday.
 
 
-```{r}
+```{r, fig.caption}
 # prepping data for heatmap plot
 plot_data <- clusters %>%
+  mutate(
+    closest_cent = paste(ifelse(cent_type == "trashCan", "Trash:",
+                                ifelse(cent_type == "recyclingCan", "Recyc", "Ash")),
+                         ifelse(closest_cent<10, paste("0",closest_cent, sep=""), closest_cent),
+                         sep= " ")
+  ) %>% 
   subset(select = c(day, closest_cent, mean_dist)) %>% 
   dcast(closest_cent ~ day, value.var = "mean_dist") %>% 
   mutate( # chaning na values to 0
@@ -236,32 +277,38 @@ rownames(plot_data) <- plot_data[,"closest_cent"]
 # making dataframe into matrix
 plot_data <- plot_data %>% 
   subset(select = -c(closest_cent)) %>% 
-  as.matrix() %>% 
-  t() # flip matrix
+  as.matrix()
+
+# colors for graph
+colors <- brewer.pal(9, "RdPu")[c(1, 6:9)]
+colors[1] <- "#ffffff"
 
 # plotting heatmap
 plot_data %>% 
   heatmaply(
           plot_method = "plotly",
-          colors = colorRampPalette(rev(brewer.pal(9, "RdPu"))),
-          dendogram = "column",
+          colors = colorRampPalette(colors),
+          dendogram = "both",
           show_dendrogram = c(FALSE, FALSE),
           label_names = c("Day", "Collection ID", "Mean Distance"),
           grid_color = "white",
-          main = "Mean Distance of Litter to Closest Collection Object",
-          xlab = "Collection Objects",
+          main = "Mean Distance of Litter from the (Trash / Recyclying / Ash) Can",
+          #ylab = "Collection Objects (ID)",
+          xlab = "A distance of 0 means there are no objects around the Collection Object.",
           key.title = "meters",
-          showticklabels = c(FALSE, TRUE),
+          showticklabels = c(TRUE, TRUE),
+          column_text_angle = 0,
           colorbar_len = .8,
           grid_gap = 1
           ) %>% 
   layout(width=800)
 ```
 
-GRAPH ABOVE:
+This graph shows that ||| PERCENTAGE ||| of the litter has a mean distance of under 20 meters to the closest applicable Collection Object.
 
-  + differences of mean distance for each cluster, by day
+# What does this all mean?
 
+Well here is a searchable data table to view the clusteringss yourself, along with some basic statistics for each!
 
 ```{r}
 # getting data for data table
@@ -290,6 +337,9 @@ clustered_data %>%
   datatable()
 ```
 
+## What does this look like?
+
+We have looked at all the numbers, lets try and see what this actually means in regards to real life!
 
 ```{r, fig.width=7, fig.height=8}
 colors <- colorNumeric(
@@ -330,7 +380,7 @@ map <- clusters %>%
   addProviderTiles(providers$CartoDB.Positron) %>% 
   addCircles(
     ~long, ~lat,
-    radius = ~max_dist,
+    radius = ~mean_dist,
     color = ~colors(cent_type),
     opacity = ~num_litter/357,
     label = lapply(labs, HTML),
@@ -367,6 +417,10 @@ ffffffffffffffffffffffffffffff
 map looks disgusting
 
 hexbin?
+
+clusters based on polygons?
+
+  + python script to get polygons?
 
 ```{r}
 
