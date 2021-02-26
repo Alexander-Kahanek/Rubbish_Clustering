@@ -20,7 +20,9 @@ read.csv(FIN) %>%
     # function to add rows for each item
     # loop through index in df
     
-    for (k in 1:3){ # needed due to re-indexing
+    bool = TRUE
+    
+    while (bool){ # needed due to re-indexing
       for (i in 1:nrow(data)){ 
         # num items > 1
         if (data[i,'itemsTagged'] > 1){ 
@@ -40,6 +42,9 @@ read.csv(FIN) %>%
             mutate( # change back to character
               itemsTagged = as.numeric(itemsTagged) 
             )
+        }
+        else{
+          bool = FALSE
         }
       }
     }
