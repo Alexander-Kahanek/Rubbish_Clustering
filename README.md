@@ -30,6 +30,7 @@ This script is made to take a Pandas DataFrame object, and two lists of centroid
 + Gives ID numbers to litter and collection objects.
 
 + Finds closest collection object for each litter object.
+	- Adjusts the distance for the curvature of the earth.
 
 + Adds columns to DataFrame object, then returns.
 	- obj_id is the object id, -1 signifies it was not tagged as a litter object.
