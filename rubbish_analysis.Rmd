@@ -1,13 +1,13 @@
 ---
 title: "Clustering litter to collection objects"
 author: "<a href='https://alexander-kahanek.github.io' target='_blank'>Alexander Kahanek</a> x <a href='https://www.rubbish.love/' target='_blank'>Rubbish, co.</a>"
-date: "6/5/2020"
+date: "3/1/2021"
 mail: "alexanderkahanek@gmail.com"
 #linkedin: ""
 #twitter: ""
 github: "Alexander-Kahanek"
 home: "alexander-kahanek.github.io"
-logo: "images/rubbish_logo.png"
+logo: "images/combined_logo.png"
 output:
   epuRate::epurate:
     #css: style.css
@@ -20,11 +20,12 @@ output:
 
 # Welcome
 
-In write-up we will be taking an advanced look at a cleanup that the Rubbish team did. This Analysis uses R vizualization and Python scripting together, utilizing the reticulate package. The data was already cleaned using R, [and the script to do so can be found as clean_script.R](https://github.com/Alexander-Kahanek/Rubbish_Clustering/blob/master/clean_script.R). A Python function was also created for the clustering algorithm, [which is located in euclidean_script.py](https://github.com/Alexander-Kahanek/Rubbish_Clustering/blob/master/euclidean_script.py). Both files can be found in my GitHub Repository.
+The purpose of this analysis is to look at the clustering of litter for the cleanup done during the Startup Grind 2020 event, by the Rubbish, co. team. We can use clustering to evaluate the placement of collection objects (i.e, trash cans, etc.) and possibly improve on the cleanup policies. We can also use this to gain insights on the habits of people who throw trash on the ground!
 
-The purpose of this analysis is to look at the clustering of litter for the cleanup done during the Startup Grind 2020 event. We can use clustering to evaluate the placement of trash collection objects (i.e, trash cans, etc.) and possibly improve on the cleanup policies. We can also use this to gain insights on the habits of people who throw trash on the ground!
+This Analysis uses R vizualization and Python scripting together, utilizing the reticulate package. The data was already cleaned using R, [and the script to do so can be found as clean_script.R](https://github.com/Alexander-Kahanek/Rubbish_Clustering/blob/master/clean_script.R). A Python function was also created for the clustering algorithm, [which is located in euclidean_script.py](https://github.com/Alexander-Kahanek/Rubbish_Clustering/blob/master/euclidean_script.py). Both files can be found in my [GitHub Repository for this analysis.](https://github.com/Alexander-Kahanek/Rubbish_Clustering)
 
-If you want to see a very well done analysis of the litter type breakdown, [please visit this blog post by Rubbish's Founder, Emin Israfil](https://www.rubbish.love/blog/the-first-conference-to-audit-its-litter)
+
+This write-up will not be discussing the impacts of litter type and litter production during an event. If you want to see a very well done analysis of the mentioned attributes, [please visit this blog post by Rubbish's Founder, Emin Israfil.](https://www.rubbish.love/blog/the-first-conference-to-audit-its-litter) 
 
 ## A little about who Rubbish, co. is
 
@@ -222,22 +223,29 @@ plot_data <- clustered_data %>%
                          ifelse(closest_cent<10, paste("0",closest_cent, sep=""), closest_cent),
                          sep= " ")
   ) %>% 
-  group_by(closest_cent,time) %>% 
+  group_by(closest_cent, time) %>% 
   summarise(
     num_litter = n()
+    # ,day = day
   ) %>% 
-  arrange(-num_litter)
-
+  ungroup() %>% 
+  rbind(data.frame("closest_cent" = NA, "time" = c(1:100), "num_litter" = 0)) %>% 
+  group_by(closest_cent, time) %>% 
+  summarise(
+    num_litter = sum(num_litter)
+  ) %>% 
+  ungroup() %>% 
+  arrange(-time)
  
 # plotting Streamgraph
-plot_data %>% 
+plot_data %>%
   streamgraph(
     "closest_cent", "num_litter", "time"
     ,interpolate="step", #offset = "zero",
     scale = "continuous", width="800px", height="400px"
-            ) %>% 
-  sg_legend(show=TRUE, label="Collection ID: ") %>% 
-  sg_fill_manual(brewer.pal(9, "RdPu")) %>% # [c(3:9)]) %>% 
+            ) %>%
+  sg_legend(show=TRUE, label="Collection ID: ") %>%
+  sg_fill_manual(brewer.pal(9, "RdPu")) %>% # [c(3:9)]) %>%
   sg_annotate("Collected Litter per Hour", "300px", "400px")
   
 ```
@@ -405,13 +413,13 @@ We noted an extreme increase in paper-based litter being collected during the fi
 
 In general, this data collection method can have amazing results if done properly. However, there are a few inherent biases due to how the data was collected which severly limited the scope on the analysis.
 
-## My reccomendations for litter data collection during events
+## My recomendations for litter data collection during events
 
 To decrease time based biases litter should be collected consistently throughout the events day. This not only helps keep litter off the ground, but it helps show the trends of how litter is being produced over time. This can help immensely by seeing where litter collection might be better focused. For example, if a conference is happening, would it be fruitful to move a Recycling bin near the entrance for participants to discard their flyers on entrance or exit? Or would this prove useless? Would it be useful to move trash cans to the exits of the buildings before the events close? Questions like these could be answered with a full-scale time series.
 
 To decrease bias in collection areas, try and spread out the collection team. Avoid team members collecting in the same areas at the same time. This will help get a better scope of litter across the whole event space, as opposed to specific areas. This improvement could help distinguish which areas are truly high or low volume areas, as well as help with distinguishing foot traffic and the corrosponding litter produced throughout the entire event. These insights could help venues focus cleanup efforts in specific areas when they know a high volume of litter will be produced.
 
-Finally, to get a full scope of the trash collected during an event, data should be collected two days before the event and two days after the event. This would serve as a good baseline, to get an idea of how the event effect litter production in the short-term. Also, litter collection objects (i.e, Trash Can, etc.) should be logged, in percentage form, for how full a certain collection object is at that time. For example, at 2:00pm trash can #3 was 50% full. The team should also measure the amount of trash thrown away, into collection objects, by participants. This can be done by physically weighing the amount of trash from a collection object. This would be much easier than counting every object thrown away. These insights could help tremendously with finding ideal locations for the collection objects. Without the knowledge of how full these objects were, everything is speculation. For example, a high litter area could be due to large amounts of foot trafffic, or a full trash can. Both are drastically different circumstances and would be fixed in very different ways.
+Finally, to get a full scope of the trash collected during an event, data should be collected two days before the event and two days after the event. This would serve as a good baseline, to get an idea of how the event effect litter production in the short-term. Also, litter collection objects (i.e, Trash Can, etc.) should be logged, in percentage form, for how full a certain collection object is at that time. For example, at 2:00pm trash can #3 was 50% full. The team should also measure the amount of trash thrown away, into collection objects, by participants. This can be done by physically weighing the amount of trash from a collection object. This would be much easier than counting every object thrown away. These insights could help tremendously with finding ideal locations for the collection objects. Without the knowledge of how full these objects were, everything is speculation. For example, a high litter area could be due to large amounts of foot trafffic, or a full trash can. Both are drastically different circumstances and would be fixed in very different ways. This could help answer questions such as: how impactful is the placement of trash cans? Are there correlations between how full a trash can is and how much litter is produced around it? Are there correlations between the average distance of litter to a trash can and how full it is? How impactful are dedicated tobacco ash Cans, compared to a trash can?
 
 # Extras
 
