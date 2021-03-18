@@ -7,7 +7,7 @@ done by: alexander kahanek
 
 This is a script used to clean the original raw data set, the hyperparameters can be modified at the top of the script. The script will output a csv file with the following changes:
 
-+ Items were sesperated into single rows
++ Items were separated into single rows
 	- they were changed from having counts for objects to one object per row
 
 + The weekdays had a mistake for one of the dates
@@ -30,6 +30,7 @@ This script is made to take a Pandas DataFrame object, and two lists of centroid
 + Gives ID numbers to litter and collection objects.
 
 + Finds closest collection object for each litter object.
+	- Adjusts the distance for the curvature of the earth.
 
 + Adds columns to DataFrame object, then returns.
 	- obj_id is the object id, -1 signifies it was not tagged as a litter object.
