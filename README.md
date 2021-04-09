@@ -48,4 +48,6 @@ This script is made to take a Pandas DataFrame object, and two lists of centroid
 # rubbish_analysis.rmd
 done by: alexander kahanek
 
-A work in progress rmd file. Goal is to be an analysis of clustering using R for vizualization and the Data Analysis, while Python is used for scripting.
+This analysis contains the full write up, visualizations, and results for the clustering analysis done of litter objects to collection objects.
+
+This is still a work in process; however, it is mostly finished.
