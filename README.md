@@ -5,7 +5,7 @@ Two data files are included in this Repository:
 + The raw dataset, provided by Rubbish, co.
 	- https://www.rubbish.love/
 
-+ The cleaned dataset, which was cleaned by me.
++ The cleaned dataset, which was cleaned by the following script.
 
 # clean_script.R
 done by: alexander kahanek
