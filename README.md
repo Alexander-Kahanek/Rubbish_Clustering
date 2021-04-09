@@ -1,6 +1,10 @@
 # Startup Grind Data Set
 
-The data files are not included in this Repository.
+Two data files are included in this Repository:
+
++ the raw dataset, provided by Rubbish, co.
+	- https://www.rubbish.love/
++ the cleaned dataset
 
 # clean_script.R
 done by: alexander kahanek
