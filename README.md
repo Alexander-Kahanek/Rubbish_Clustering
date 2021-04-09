@@ -2,20 +2,21 @@
 
 Two data files are included in this Repository:
 
-+ the raw dataset, provided by Rubbish, co.
++ The raw dataset, provided by Rubbish, co.
 	- https://www.rubbish.love/
-+ the cleaned dataset
+
++ The cleaned dataset,
 
 # clean_script.R
 done by: alexander kahanek
 
 This is a script used to clean the original raw data set, the hyperparameters can be modified at the top of the script. The script will output a csv file with the following changes:
 
-+ Items were separated into single rows
-	- they were changed from having counts for objects to one object per row
++ Items were separated into single rows,
+	- they were changed from having counts for objects to one object per row.
 
-+ The weekdays had a mistake for one of the dates
-	- They were changed to match.
++ The weekdays had a mistake for one of the dates,
+	- they were changed to match.
 
 + Seperated system timestamp to two columns
 	- date - changed to Year-month-day
