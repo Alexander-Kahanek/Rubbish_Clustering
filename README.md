@@ -40,7 +40,7 @@ This script is made to take a Pandas DataFrame object, and two lists of centroid
 	- distance is the distance from the litter object to the closest centroid, -1 signifies there is no distance.
 	
 
-# analysis.rmd
+# rubbish_analysis.rmd
 done by: alexander kahanek
 
 A work in progress rmd file. Goal is to be an analysis of clustering using R for vizualization and the Data Analysis, while Python is used for scripting.
