@@ -6,6 +6,7 @@ Two data files are included in this Repository:
 	- https://www.rubbish.love/
 
 + The cleaned dataset, which was cleaned by the following script.
++ The clustered dataset, which is the outputted dataset from the clustering algorithm.
 
 # clean_script.R
 done by: alexander kahanek
