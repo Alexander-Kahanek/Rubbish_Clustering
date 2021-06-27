@@ -252,7 +252,7 @@ plot_data %>%
 
 Each seperation of color corrosponds to a different collection object. Colors are repeated as there are too many collection objects to create distinct colors. 
 
-From the above we can decipher when the Rubbish team was at the location in cleanup-mode in full force. We see drastic spikes in the volume of collected litter. This could mean that litter collection was not consistent across the whole event, meaning they cleaned in certain time segments instead of during the entire event. However, this could also mean there was generally less litter during the times of lower volumes. After talking to the Rubbish team, the reality is the former. My suggestion would be to focus on cleaning during the entire event, in order to lessen the bias on a time-scale. Due to this bias in collection times, any analysis on the litter produced over time would have a major bias and could easily misrepresent reality.
+From the above we can decipher when the Rubbish team was at the location in cleanup-mode in full force. We see drastic spikes in the volume of collected litter. This could mean that litter collection was not consistent across the whole event, meaning they cleaned in certain time segments instead of during the entire event. However, this could also mean there was generally less litter during the times of lower volumes. After talking to the Rubbish team, the reality is they did their cleaning after the event was coming to a close. My suggestion would be to focus on cleaning during the entire event, in order to lessen the bias on a time-scale. Due to this bias in collection times, any analysis on the litter produced over time would have a major bias and could easily misrepresent reality.
 
 Another point is we can see larger volumes of litter around certain collection objects during these timeblocks. This could be due to a larger build-up over litter around these areas, or it could be due to the Rubbish team lingering and favoring certain collection object locations. It is difficult to tell from this graph, so to find how the team collected their litter we can create a time map of all the litter they collected!
 
@@ -306,7 +306,7 @@ anim_save("rubbish.time_collection.gif", time_plot)
 
 From the above gif we can see how rubbish well the Rubbish team moved around the area to collect the litter. If you look closesly, you can even tell how many people were picking up litter at the same time.
 
-It seems there is some clustering around some areas; however, this could have easily been due to a higher volume of litter in these areas. The Rubbish team also did not pick up any litter in the lower left area.
+It seems there is some lingering around some areas; however, this could have easily been due to a higher volume of litter in these areas. The Rubbish team also did not pick up any litter in the lower left area, yet collection objects were tagged there.
 
 ## Well, how close was the litter to Collection Objects?
 
@@ -427,7 +427,7 @@ plot_data %>%
           ,main = "The count of Litter for each (Trash / Recyclying / Ash) Can"
           #ylab = "Collection Objects (ID)",
           ,xlab = "A distance of 0 means there are no objects around the Collection Object."
-          ,key.title = "meters"
+          ,key.title = "# of litter"
           ,showticklabels = c(TRUE, TRUE)
           ,column_text_angle = 0
           ,colorbar_len = .8
@@ -519,7 +519,7 @@ clustered_data %>%
   datatable()
 ```
 
-In total we have 42 collection objects. The average distance of the litter to the nearest collection object is on average 12.28 meters. From this we can assume that the average person drops their trash on the ground if they are a measly 12 meters away from the closest trash can. That is about 40 feet for us American folks. This means that event venues should place their trash collection objects within 40 feet to maximize their effectiveness.
+In total we have 42 collection objects. The average distance of the litter to the nearest collection object is on average 12.28 meters. From this we can assume that the average person drops their trash on the ground if they are a measly 12 meters away from the closest trash can. That is about 40 feet for us American folks. This means that event venues should place their trash collection objects in 40 foot intervals to maximize their effectiveness.
 
 # What does this all mean? 
 
@@ -527,9 +527,11 @@ In summary, we found the that 14% of our 42 collection objects had an average di
 
 Based on the clustering map, we can visually see that the clusters are grouped together well and none are excessively large. Unfortunately, not much could be gained from the time-series aspect of the litter produced over time, due to a clear (unintended) bias from the Rubbish team collecting litter in bursts, as opposed to consistently throughout the event.
 
-We noted an extreme increase in paper-based litter being collected during the first day of the event. This is most likely due to flyers being handed out to the even participants. In the future, things like this could be avoided by placing more strategic trash cans. 
+We noted an extreme increase in paper-based litter being collected during the first day of the event. This is most likely due to flyers being handed out to the even participants. In the future, things like this could be avoided by placing more strategic trash cans.
 
-In general, this data collection method can have amazing results if done properly. However, there are a few inherent biases due to how the data was collected which severly limited the scope on the analysis.
+Finally, we also found that statistically speaking, there does not seem to be an influence of how much litter is already around the area and a persons decision to get their litter closer to the collection object.
+
+In general, we found some pretty awesome insights. However, there are a few inherent biases due to how the data was collected which severly limited the scope on the analysis. If these biases are addressed, much more could be done. Such as, finding the optimal collection object placements to minimize the amount of litter, hopefully finding more correlations on why people litter, designing a way to measure the efficacy of collection objects, finding the litter patterns of people during the event timeline, and lastly, helping keep the world a cleaner rock to live on!
 
 ## My recomendations for litter data collection during events
 
@@ -579,6 +581,10 @@ sunburst
 
 Below are the code chunks for the statistics used throughout this analysis. They are shoved to the bottom, so not to muddy up the written portion.
 
+
+total number of collection objects
+
+
 ```{r}
 # finding the number of collection objects with a average distance greater than 20 meters
 
@@ -613,7 +619,9 @@ nDistance <- nDistance %>%
 nDistance %>% nrow()
 ```
 
-total number of collection objects
+
+total number of objects with a average distance greater than 20 meters
+
 
 ```{r}
 ###############
@@ -623,7 +631,8 @@ nDistance %>%
   nrow()
 ```
 
-total number of objects with a average distance greater than 20 meters
+
+total units of litter collected
 
 
 ```{r}
@@ -634,7 +643,9 @@ raw %>%
   nrow()
 ```
 
-total units of litter collected
+
+number of litter collected for each day
+
 
 ```{r}
 raw %>% 
@@ -646,13 +657,17 @@ raw %>%
   head()
 ```
 
-number of litter collected for each day
+
+the head of the raw data
+
 
 ```{r}
 raw %>% head()
 ```
 
-the head of the raw data
+
+average distances to clusters for each day
+
 
 ```{r}
 nDistance <- clusters %>%
@@ -696,4 +711,3 @@ nDistance %>%
   )
 ```
 
-average distances to clusters for each day
