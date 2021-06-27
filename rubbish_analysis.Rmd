@@ -345,6 +345,14 @@ plot_data <- plot_data %>%
 colors <- brewer.pal(9, "RdPu")[c(1, 6:9)]
 colors[1] <- "#ffffff"
 
+# row clustering order
+row_order <- plot_data %>% 
+  dist(method = "euclidean") %>% 
+  hclust(method = "complete") %>% 
+  as.dendrogram() %>% 
+  rev()
+
+
 # plotting heatmap
 plot_data %>% 
   heatmaply(
@@ -362,6 +370,9 @@ plot_data %>%
           ,column_text_angle = 0
           ,colorbar_len = .8
           ,grid_gap = 1
+          ,Rowv = row_order
+          ,Colv = clustered_data$day %>% unique()
+          # ,cellnote = plot_data
           ) %>% 
   layout(width=800)
 ```
@@ -369,6 +380,113 @@ plot_data %>%
 From the above we can see that most collection objects were fairly consistent with its average distance of surrounding litter. We see that some collection objects, namely the top ID's, having a large distance, while the lower part of the graph has a very low average distance. These disparities could be due to human laziness, the "fullness" of the collection object, or the amount of foot-traffic in the area. 
 
 Along with this, we found 6 out of our total 42 collection objects to have a mean distance of more than 20 meters, when summing the distance across all four days. This leads us to believe that at least 6 of these collection objects could be moved to better locations to accomodate the events participants.
+
+## But what about the number of items per cluster?
+
+To get an idea of this, let's take the exact same heatmap, but look at the count of items found near each collection object.
+
+```{r}
+# prepping data for heatmap plot
+plot_data <- clusters %>%
+  mutate(
+    closest_cent = paste(ifelse(cent_type == "trashCan", "Trash:",
+                                ifelse(cent_type == "recyclingCan", "Recy:", "Ash:")),
+                         ifelse(closest_cent<10, paste("0",closest_cent, sep=""), closest_cent),
+                         sep= " ")
+  ) %>% 
+  subset(select = c(day, closest_cent, num_litter)) %>% 
+  dcast(closest_cent ~ day, value.var = "num_litter") %>% 
+  mutate( # chaning na values to 0
+    Sunday = ifelse(is.na(Sunday),0,Sunday)
+    ,Monday = ifelse(is.na(Monday),0,Monday)
+    ,Tuesday = ifelse(is.na(Tuesday),0,Tuesday)
+    ,Wednesday = ifelse(is.na(Wednesday),0,Wednesday)
+  )
+
+# changing rownames to centroid id
+rownames(plot_data) <- plot_data[,"closest_cent"]
+
+# making dataframe into matrix
+plot_data <- plot_data %>% 
+  subset(select = -c(closest_cent)) %>% 
+  as.matrix()
+
+# colors for graph
+colors <- brewer.pal(9, "RdPu")[c(1, 6:9)]
+colors[1] <- "#ffffff"
+
+# plotting heatmap
+plot_data %>% 
+  heatmaply(
+          plot_method = "plotly"
+          ,colors = colorRampPalette(colors)
+          ,dendogram = "both"
+          ,show_dendrogram = c(FALSE, FALSE)
+          ,label_names = c("Day", "Collection ID", "Number of Litter")
+          ,grid_color = "white"
+          ,main = "The count of Litter for each (Trash / Recyclying / Ash) Can"
+          #ylab = "Collection Objects (ID)",
+          ,xlab = "A distance of 0 means there are no objects around the Collection Object."
+          ,key.title = "meters"
+          ,showticklabels = c(TRUE, TRUE)
+          ,column_text_angle = 0
+          ,colorbar_len = .8
+          ,grid_gap = 1
+          ,Rowv = row_order
+          ,Colv = clustered_data$day %>% unique()
+          # ,cellnote = plot_data
+          ) %>% 
+  layout(width=800)
+```
+
+From this we can see that most collection objects have about 10-20 pieces of litter near it; however, some of them have well over 100. This tells could tell us a few things: the collection objects with higher counts had more traffic, they were fuller than others (meaning litter fell out of them), or people were lazier in those areas.
+
+Most importantly though, we really don't know why this is the case. But, we can try to see if there is a connection between the count of litter per cluster, and the average distance of litter.
+
+## Is there a connection between the average distance and the amount of litter?
+
+To get an idea, lets look at some simple point plots, seperated by days as thats when each of these clusters are cleaned.
+
+```{r}
+# prepping data for heatmap plot
+plot_data <- clusters %>%
+  mutate(
+    closest_cent = paste(ifelse(cent_type == "trashCan", "Trash:",
+                                ifelse(cent_type == "recyclingCan", "Recy:", "Ash:")),
+                         ifelse(closest_cent<10, paste("0",closest_cent, sep=""), closest_cent),
+                         sep= " ")
+  ) %>% 
+  subset(select = c(day, closest_cent, num_litter, mean_dist))
+
+plot_data %>% 
+  ggplot() + 
+  facet_wrap(~day) +
+  geom_point(aes(x = num_litter, y = mean_dist, color= closest_cent)) + 
+  theme(legend.position = "none") + 
+  xlab("The total count of litter found for each collection object") + 
+  ylab("The average distance of litter from the collection object") + 
+  labs(title = "The distribution of the amount of litter found near a collection object\n and the litters average distance away.")
+
+```
+
+From this, we initially see no correlations. It appears there is a weak, positive, correlation on Wednesday. However, nothing looks convincing. None-the-less, let's check out the Pearson Correlation R values.
+
+```{r}
+for (day_r in clustered_data$day %>% unique()){
+  print(day_r)
+  
+  plot_data %>% 
+    subset(day == day_r) %>% 
+  subset(select = c(num_litter, mean_dist)) %>% 
+  cor() %>% 
+    # power(2) %>% 
+    print()
+}
+
+
+```
+
+Here we can see the correlation values for each day. Again, nothing convincing, but we can see a weak correlation between the two variables on Wednesday. In general, this tells us that there does not seem to be an influence of how much litter is already around the area and a persons decision to get their litter closer to the collection object.
 
 ## Searchable data table of clusters
 
