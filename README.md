@@ -5,7 +5,7 @@ Two data files are included in this Repository:
 + The raw dataset, provided by Rubbish, co.
 	- https://www.rubbish.love/
 
-+ The cleaned dataset, which was cleaned by the following script.
++ The cleaned dataset, which was cleaned by the `clean_script.R` file.
 + The clustered dataset, which is the outputted dataset from the clustering algorithm.
 
 # clean_script.R
