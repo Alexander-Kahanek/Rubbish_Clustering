@@ -486,7 +486,7 @@ for (day_r in clustered_data$day %>% unique()){
 
 ```
 
-Here we can see the correlation values for each day. Again, nothing convincing, but we can see a weak correlation between the two variables on Wednesday. In general, this tells us that there does not seem to be an influence of how much litter is already around the area and a persons decision to get their litter closer to the collection object.
+Here we can see the correlation values for each day. Again, nothing convincing, but we can see a weak correlation between the two variables on Wednesday. In general, this tells us that there does not seem to be an influence of how much litter is already around the area and a persons decision to get their litter closer to the collection object. However, we don't have enough data to confirm this.
 
 ## Searchable data table of clusters
 
