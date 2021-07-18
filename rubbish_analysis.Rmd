@@ -61,6 +61,13 @@ library(heatmaply) # for heatmap graph
 library(DT) # for data table
 ######################################
 
+# placeholders for plot facet wrap titles
+day_names <- c(
+  'Sunday' = "Sunday (Baseline)"
+  ,'Monday' = "Monday (Opening Night)"
+  ,'Tuesday' = "Tuesday (Day 1)"
+  ,'Wednesday' = "Wednesday (Day 2)"
+)
 
 # setup to get all types
 collection = c('trashCan', 'recyclingCan', 'tobaccoAshCan')
@@ -100,7 +107,7 @@ plot_data %>%
   ggplot() +
   geom_segment( aes(x=order, xend=order, y=0, yend=num_litter), color="pink", size = 1.5) +
   geom_point( aes(x=order, y=num_litter, color="pink"), size=5 ) +
-  coord_flip()+
+  coord_flip() +
   theme_ipsum() +
   theme(
     panel.grid.minor.y = element_blank()
@@ -115,7 +122,7 @@ plot_data %>%
   labs(title = "Total Litter Collected by Rubbish Team"
        ,subtitle = "during the Startup Grind 2020 Conference"
        ) +
-  facet_wrap(~day, ncol=1, scale="free_y") +
+  facet_wrap(~day, ncol=1, scale="free_y", labeller = as_labeller(day_names)) +
   scale_x_continuous(
     breaks = plot_data$order
     ,labels = plot_data$rubbishType)
@@ -293,7 +300,7 @@ ggplot() +
              ,size = 1.5) +
   geom_point(aes(x= long, y=lat, group=id, color= closest_cent)) +
   theme(legend.position = "none") +
-  facet_wrap(~day) +
+  facet_wrap(~day, labeller = as_labeller(day_names)) +
   labs(title = 'Timeseries of the Rubbish Litter Cleanup for Startup Grind 2020'
        ,subtitle = "color corrosponds to the found clusters by collection objects (black)"
        ) +
@@ -460,7 +467,7 @@ plot_data <- clusters %>%
 
 plot_data %>% 
   ggplot() + 
-  facet_wrap(~day) +
+  facet_wrap(~day, labeller = as_labeller(day_names)) +
   geom_point(aes(x = num_litter, y = mean_dist, color= closest_cent)) + 
   theme(legend.position = "none") + 
   xlab("The total count of litter found for each collection object") + 
@@ -543,7 +550,7 @@ Finally, to get a full scope of the trash collected during an event, data should
 
 # Extras
 
-## Sunburst graph of clustering
+## A fun Sunburst graph!
 
 Finally, I will leave you with this fun sunburst graph to play with. You can hover over each section to further subset the clusters by type of objects surrounding the collection objects, then further by the amount of that type collected on each respective day. Have fun!
 
@@ -579,10 +586,18 @@ sunburst
 
 -------------------------
 
-Below are the code chunks for the statistics used throughout this analysis. They are shoved to the bottom, so not to muddy up the written portion.
+Below are the code chunks for the makings and simple statistics used throughout this analysis. They are shoved to the bottom, so not to muddy up the written portion.
 
 
-total number of collection objects
+## The head of the raw data
+
+
+```{r}
+raw %>% head()
+```
+
+
+##  Total number of collection objects
 
 
 ```{r}
@@ -620,7 +635,7 @@ nDistance %>% nrow()
 ```
 
 
-total number of objects with a average distance greater than 20 meters
+## Total number of objects with a average distance greater than 20 meters
 
 
 ```{r}
@@ -632,7 +647,7 @@ nDistance %>%
 ```
 
 
-total units of litter collected
+## Total units of litter collected
 
 
 ```{r}
@@ -644,7 +659,7 @@ raw %>%
 ```
 
 
-number of litter collected for each day
+## Number of litter collected for each day
 
 
 ```{r}
@@ -658,15 +673,8 @@ raw %>%
 ```
 
 
-the head of the raw data
 
-
-```{r}
-raw %>% head()
-```
-
-
-average distances to clusters for each day
+## Average distances to clusters for each day
 
 
 ```{r}
