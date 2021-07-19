@@ -13,7 +13,6 @@ Three data files are included in this Repository:
 + The clustered dataset, which is the outputted dataset from the clustering algorithm.
 
 ## clean_script.R
-done by: alexander kahanek
 
 This is a script used to clean the original raw data set, the hyperparameters can be modified at the top of the script. The script will output a csv file with the following changes:
 
@@ -33,7 +32,6 @@ This is a script used to clean the original raw data set, the hyperparameters ca
 
 
 ## euclidean_script.py
-done by: alexander kahanek
 
 This script is made to take a Pandas DataFrame object, and two lists of centroid and object names. It leaves an option to use the logical classifier, or to ignore this. The script performs the following:
 
@@ -51,7 +49,6 @@ This script is made to take a Pandas DataFrame object, and two lists of centroid
 	
 
 ## rubbish_analysis.rmd
-done by: alexander kahanek
 
 This analysis contains the full write up, visualizations, and results for the clustering analysis done of litter objects to collection objects.
 
