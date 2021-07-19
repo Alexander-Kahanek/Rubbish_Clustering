@@ -1,3 +1,7 @@
+# Welcome!
+
+This repository is for hosting the dataset and analysis done on the Startup Grind 2020 Cleanup! Below you will find an overview of the data and code files used for everything.
+
 # Startup Grind Data Set
 
 Three data files are included in this Repository:
