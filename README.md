@@ -2,6 +2,8 @@
 
 This repository is for hosting the dataset and analysis done on the Startup Grind 2020 Cleanup! Below you will find an overview of the data and code files used for everything.
 
+![Dashboard created for the Rubbish team](https://github.com/Alexander-Kahanek/Rubbish_Clustering/blob/master/viz/Rubbish_Dashboard_fast.gif)
+
 # Startup Grind Data Set
 
 Three data files are included in this Repository:
