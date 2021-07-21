@@ -51,5 +51,3 @@ This script is made to take a Pandas DataFrame object, and two lists of centroid
 ## rubbish_analysis.rmd
 
 This analysis contains the full write up, visualizations, and results for the clustering analysis done of litter objects to collection objects.
-
-This is still a work in process; however, it is mostly finished.
